@@ -1,4 +1,4 @@
-name: Deploy Accounting App
+name:deploy.yml
 
 on:
   push:
