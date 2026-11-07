@@ -157,6 +157,8 @@ const MODULE_NAMES: Record<SystemModule, string> = {
   activity_logs: 'سجل النشاط',
   settings: 'الإعدادات',
   reports: 'تقارير الأقساط والتحصيل',
+  suppliers: 'الموردين ومقاولو الباطن',
+  partners: 'الشركاء والأرباح الرأسمالية',
 };
 
 const ACTION_NAMES: Record<PermissionAction, string> = {
@@ -184,6 +186,8 @@ export const generateAllPermissions = (): Permission[] => {
     'activity_logs',
     'settings',
     'reports',
+    'suppliers',
+    'partners',
   ];
   const actions: PermissionAction[] = ['view', 'create', 'edit', 'delete', 'approve', 'print', 'export'];
 
@@ -217,6 +221,8 @@ export const DEFAULT_ROLE_PERMISSION_CODES: Record<string, string[]> = {
     'inventory:view', 'inventory:create', 'inventory:edit', 'inventory:approve', 'inventory:print', 'inventory:export',
     'installments:view', 'installments:create', 'installments:edit', 'installments:approve', 'installments:print', 'installments:export',
     'banking:view', 'banking:create', 'banking:edit', 'banking:approve', 'banking:print', 'banking:export',
+    'suppliers:view', 'suppliers:create', 'suppliers:edit', 'suppliers:approve', 'suppliers:print', 'suppliers:export',
+    'partners:view', 'partners:create', 'partners:edit', 'partners:approve', 'partners:print', 'partners:export',
     'users:view', 'roles_permissions:view', 'activity_logs:view', 'activity_logs:export',
     'settings:view',
     'reports:view', 'reports:print', 'reports:export'
@@ -227,6 +233,8 @@ export const DEFAULT_ROLE_PERMISSION_CODES: Record<string, string[]> = {
     'towers:view', 'towers:create', 'towers:edit', 'towers:print', 'towers:export',
     'costs:view', 'costs:create', 'costs:print', 'costs:export',
     'inventory:view', 'inventory:create', 'inventory:print',
+    'suppliers:view',
+    'partners:view',
     'activity_logs:view',
     'reports:view', 'reports:print', 'reports:export'
   ],
@@ -238,6 +246,8 @@ export const DEFAULT_ROLE_PERMISSION_CODES: Record<string, string[]> = {
     'inventory:view', 'inventory:export', 'inventory:print',
     'installments:view', 'installments:create', 'installments:edit', 'installments:approve', 'installments:print', 'installments:export',
     'banking:view', 'banking:create', 'banking:edit', 'banking:approve', 'banking:print', 'banking:export',
+    'suppliers:view', 'suppliers:create', 'suppliers:edit', 'suppliers:delete', 'suppliers:approve', 'suppliers:print', 'suppliers:export',
+    'partners:view', 'partners:create', 'partners:edit', 'partners:approve', 'partners:print', 'partners:export',
     'activity_logs:view',
     'reports:view', 'reports:print', 'reports:export'
   ],
@@ -246,7 +256,8 @@ export const DEFAULT_ROLE_PERMISSION_CODES: Record<string, string[]> = {
     'projects:view',
     'towers:view',
     'costs:view', 'costs:create',
-    'inventory:view', 'inventory:create', 'inventory:edit', 'inventory:print', 'inventory:export'
+    'inventory:view', 'inventory:create', 'inventory:edit', 'inventory:print', 'inventory:export',
+    'suppliers:view', 'suppliers:create', 'suppliers:edit', 'suppliers:print', 'suppliers:export'
   ],
   storekeeper: [
     'dashboard:view',

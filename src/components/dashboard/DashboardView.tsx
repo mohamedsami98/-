@@ -19,7 +19,9 @@ import {
   ChevronLeft,
   FileSpreadsheet,
   Download,
-  FileBarChart
+  FileBarChart,
+  Truck,
+  PieChart
 } from 'lucide-react';
 import { StatCard } from '../common/StatCard';
 import { ProjectStatusBadge, ProjectTypeBadge } from '../common/Badge';
@@ -209,7 +211,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       </div>
 
       {/* Quick Financial & Operational Shortcuts */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+      {/* Quick Financial & Operational Shortcuts */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         <button
           type="button"
           onClick={() => onNavigate('costs')}
@@ -223,6 +226,36 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
           <h4 className="mt-3 text-sm font-bold text-slate-900">التكاليف والمصروفات</h4>
           <p className="mt-1 text-xs text-slate-500">قيد تكاليف الأبراج وتوزيعها على الوحدات (م²)</p>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onNavigate('suppliers')}
+          className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm hover:border-cyan-400 hover:shadow-md transition-all text-right group"
+        >
+          <div className="flex items-center justify-between">
+            <div className="w-10 h-10 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Truck className="w-5 h-5" />
+            </div>
+            <ChevronLeft className="w-4 h-4 text-slate-400 group-hover:text-cyan-600 group-hover:-translate-x-1 transition-all" />
+          </div>
+          <h4 className="mt-3 text-sm font-bold text-slate-900">الموردون ومقاولو الباطن</h4>
+          <p className="mt-1 text-xs text-slate-500">فواتير التوريد، سندات الصرف، وكشوف الحسابات</p>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onNavigate('partners')}
+          className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm hover:border-purple-400 hover:shadow-md transition-all text-right group"
+        >
+          <div className="flex items-center justify-between">
+            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <PieChart className="w-5 h-5" />
+            </div>
+            <ChevronLeft className="w-4 h-4 text-slate-400 group-hover:text-purple-600 group-hover:-translate-x-1 transition-all" />
+          </div>
+          <h4 className="mt-3 text-sm font-bold text-slate-900">الشركاء وتوزيع الأرباح</h4>
+          <p className="mt-1 text-xs text-slate-500">احتساب التكلفة والأرباح وفقاً لنسب المساهمة</p>
         </button>
 
         <button

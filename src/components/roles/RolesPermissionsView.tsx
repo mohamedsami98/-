@@ -26,6 +26,8 @@ const MODULE_NAMES: Record<SystemModule, string> = {
   installments: 'تحصيل الأقساط',
   reports: 'تقارير الأقساط والتحصيل',
   banking: 'الحسابات البنكية والخزائن',
+  suppliers: 'الموردون ومقاولو الباطن',
+  partners: 'الشركاء وحسابات رأس المال والأرباح',
   users: 'إدارة المستخدمين',
   roles_permissions: 'الأدوار والصلاحيات',
   activity_logs: 'سجل النشاط والعمليات',

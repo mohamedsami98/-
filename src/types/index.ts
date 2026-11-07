@@ -10,7 +10,9 @@ export type SystemModule =
   | 'roles_permissions'
   | 'activity_logs'
   | 'settings'
-  | 'reports';
+  | 'reports'
+  | 'suppliers'
+  | 'partners';
 
 export type PermissionAction = 
   | 'view'
@@ -361,5 +363,184 @@ export interface InstallmentPaymentReceipt {
   created_at: string;
   created_by_name: string;
   received_by_user_name?: string;
+}
+
+// ============================================================================
+// SUPPLIERS & SUBCONTRACTORS (الموردين ومقاولو الباطن)
+// ============================================================================
+
+export type SupplierCategory = 
+  | 'building_materials'  // مواد بناء وخرسانة وأسمنت
+  | 'steel'               // حديد تسليح ومعدن
+  | 'finishes'            // تشطيبات ودهانات وسيراميك
+  | 'electrical_plumbing' // كهرباء وصحي وتكييف
+  | 'machinery_rental'    // معدات وأوناش وحفارات
+  | 'subcontractor'       // مقاول باطن (مصنعيات ونجارة وحدادة)
+  | 'engineering_services'// استشارات وهندسة واختبارات
+  | 'other';              // أخرى
+
+export interface Supplier {
+  id: string;
+  code: string;
+  name: string;
+  company_name?: string;
+  category: SupplierCategory;
+  category_ar?: string;
+  contact_person: string;
+  phone: string;
+  phone2?: string;
+  email?: string;
+  address?: string;
+  tax_number?: string;
+  commercial_registry?: string;
+  bank_name?: string;
+  bank_account_number?: string;
+  iban?: string;
+  notes?: string;
+  is_active: boolean;
+  total_invoiced: number;    // إجمالي الفواتير والتوريدات
+  total_paid: number;        // إجمالي المسدد له
+  current_balance: number;   // الرصيد الحالي المستحق للمورد (دائن)
+  created_at: string;
+  updated_at?: string;
+}
+
+export type SupplierInvoiceStatus = 'paid' | 'partially_paid' | 'unpaid';
+
+export interface SupplierInvoice {
+  id: string;
+  invoice_number: string;
+  supplier_id: string;
+  supplier_name: string;
+  project_id?: string;
+  project_name?: string;
+  tower_id?: string;
+  tower_name?: string;
+  invoice_date: string;
+  due_date?: string;
+  category: CostCategory | SupplierCategory;
+  items_summary: string;     // بيان المواد أو الأعمال
+  subtotal: number;
+  tax_amount: number;        // ضريبة القيمة المضافة أو الخصم
+  discount_amount: number;
+  total_amount: number;      // إجمالي الفاتورة
+  paid_amount: number;       // المبلغ المسدد منها
+  remaining_amount: number;  // المتبقي
+  status: SupplierInvoiceStatus;
+  notes?: string;
+  attachment_url?: string;
+  created_at: string;
+  created_by_name?: string;
+}
+
+export interface SupplierPayment {
+  id: string;
+  payment_number: string;    // سند صرف رقم
+  supplier_id: string;
+  supplier_name: string;
+  invoice_id?: string;       // مرتبطة بفاتورة معينة إن وجدت
+  invoice_number?: string;
+  amount: number;
+  payment_date: string;
+  payment_method: PaymentMethod;
+  bank_account_id: string;
+  bank_account_name: string;
+  transfer_reference?: string;
+  cheque_number?: string;
+  cheque_bank_name?: string;
+  cheque_due_date?: string;
+  description: string;       // البيان (دفعة تحت الحساب / سداد فاتورة كذا)
+  notes?: string;
+  created_at: string;
+  created_by_name: string;
+}
+
+// ============================================================================
+// PARTNERS & CAPITAL PROFIT SHARING (الشركاء وتوزيع الأرباح والتكاليف)
+// ============================================================================
+
+export type PartnerType = 
+  | 'capital_investor'  // شريك ممول برأس مال
+  | 'founding_partner'  // شريك مؤسس
+  | 'managing_partner'  // شريك تنفيذي وإداري
+  | 'land_partner'      // شريك بالأرض
+  | 'other';
+
+export interface Partner {
+  id: string;
+  code: string;
+  name: string;
+  partner_type: PartnerType;
+  partner_type_ar?: string;
+  national_id?: string;
+  phone: string;
+  email?: string;
+  address?: string;
+  bank_name?: string;
+  bank_account_number?: string;
+  iban?: string;
+  notes?: string;
+  is_active: boolean;
+  total_invested: number;        // إجمالي المبالغ المدخلة عبر المشروعات
+  total_withdrawn: number;       // إجمالي التوزيعات والمسحوبات المستلمة
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface PartnerProjectShare {
+  id: string;
+  partner_id: string;
+  partner_name: string;
+  project_id: string;
+  project_name: string;
+  investment_amount: number;    // المبلغ المدخل من الشريك في هذا المشروع
+  project_total_budget: number; // المبلغ الإجمالي للمشروع (الميزانية التقديرية أو رأس المال)
+  share_percentage: number;     // نسبة الشريك % = (investment_amount / project_total_budget) * 100
+  custom_profit_share_percentage?: number; // نسبة أرباح متفق عليها مخصصة إن وجدت
+  agreement_date: string;
+  notes?: string;
+  bank_account_id?: string;     // حساب الإيداع البنكي للشركة الذي دخل فيه المبلغ
+  status: 'active' | 'exited' | 'pending';
+  created_at: string;
+}
+
+export interface PartnerDistribution {
+  id: string;
+  distribution_number: string;  // سند صرف أرباح / مسحوبات
+  partner_id: string;
+  partner_name: string;
+  project_id?: string;
+  project_name?: string;
+  distribution_type: 'profit_payout' | 'capital_refund' | 'withdrawal'; // صرف أرباح / استرداد رأس مال / مسحوبات
+  amount: number;
+  distribution_date: string;
+  payment_method: PaymentMethod;
+  bank_account_id: string;
+  bank_account_name: string;
+  transfer_reference?: string;
+  cheque_number?: string;
+  notes?: string;
+  created_at: string;
+  created_by_name: string;
+}
+
+export interface PartnerFinancialCalculation {
+  partner_id: string;
+  partner_name: string;
+  project_id: string;
+  project_name: string;
+  investment_amount: number;       // مساهمة الشريك
+  project_total_budget: number;    // رأس مال / ميزانية المشروع
+  share_percentage: number;        // نسبة المساهمة %
+  effective_profit_percentage: number;
+  actual_project_cost: number;     // تكلفة المشروع الفعلية حتى الآن
+  partner_cost_share: number;      // نصيب الشريك من التكلفة الفعلية
+  project_total_revenue: number;   // إجمالي مبيعات / إيرادات المشروع
+  partner_revenue_share: number;   // نصيب الشريك من الإيرادات
+  project_net_profit: number;      // صافي ربح / خسارة المشروع
+  partner_profit_share: number;    // نصيب الشريك من صافي الأرباح
+  roi_percentage: number;          // العائد على الاستثمار %
+  total_distributed: number;       // التوزيعات والمسحوبات المسلمة للشريك
+  net_balance_due: number;         // صافي المستحق للشريك حالياً (رأس المال + نصيب الأرباح - المسحوبات)
 }
 

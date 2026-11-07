@@ -25,6 +25,8 @@ import { InventoryView } from './components/inventory/InventoryView';
 import { InstallmentsView } from './components/installments/InstallmentsView';
 import { InstallmentReportsView } from './components/reports/InstallmentReportsView';
 import { BankingView } from './components/banking/BankingView';
+import { SuppliersView } from './components/suppliers/SuppliersView';
+import { PartnersView } from './components/partners/PartnersView';
 import { LoadingSpinner } from './components/common/LoadingSpinner';
 import { Project, Tower, User } from './types';
 import { dataService } from './lib/supabase';
@@ -212,6 +214,14 @@ function MainAppContent() {
 
       {currentView === 'inventory' && (
         <InventoryView key={refreshKey} />
+      )}
+
+      {currentView === 'suppliers' && (
+        <SuppliersView key={refreshKey} />
+      )}
+
+      {currentView === 'partners' && (
+        <PartnersView key={refreshKey} />
       )}
 
       {currentView === 'installments' && (

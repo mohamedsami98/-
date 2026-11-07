@@ -14,7 +14,9 @@ import {
   Package,
   CreditCard,
   Landmark,
-  FileBarChart
+  FileBarChart,
+  Truck,
+  PieChart
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
@@ -52,6 +54,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const financialNavItems: NavItem[] = [
     { id: 'costs', module: 'costs', label: 'التكاليف والمصروفات', icon: Receipt },
     { id: 'inventory', module: 'inventory', label: 'المخازن والمواد الخام', icon: Package },
+    { id: 'suppliers', module: 'suppliers', label: 'الموردون ومقاولو الباطن', icon: Truck },
+    { id: 'partners', module: 'partners', label: 'الشركاء والأرباح', icon: PieChart },
     { id: 'installments', module: 'installments', label: 'تحصيل الأقساط', icon: CreditCard },
     { id: 'reports', module: 'reports', label: 'تقارير الأقساط والتحصيل', icon: FileBarChart },
     { id: 'banking', module: 'banking', label: 'الحسابات البنكية والخزائن', icon: Landmark },
