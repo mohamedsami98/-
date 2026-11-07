@@ -26,10 +26,13 @@ import { isSupabaseConfigured } from '../../lib/supabase';
 import { FULL_POSTGRES_SCHEMA } from '../../lib/sqlSchema';
 
 export const SettingsView: React.FC = () => {
-  const { settings, updateSettings, resetToDemoData } = useSettings();
+  const { settings, updateSettings, resetToDemoData, wipeAllApplicationData } = useSettings();
   const { user } = useAuth();
   const { success, error } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showWipeConfirmModal, setShowWipeConfirmModal] = useState(false);
+  const [wipeConfirmText, setWipeConfirmText] = useState('');
+  const [isWiping, setIsWiping] = useState(false);
 
   const [companyName, setCompanyName] = useState(settings.company_name);
   const [systemName, setSystemName] = useState(settings.system_name);
@@ -171,38 +174,32 @@ export const SettingsView: React.FC = () => {
   };
 
   // Primary Admin Wipe all data
-  const handleWipeAllData = () => {
+  const handleOpenWipeModal = () => {
     if (!isPrimaryAdmin) {
       error('عذراً، هذه العملية مقصورة فقط على الأدمن الرئيسي للنظام.');
       return;
     }
+    setWipeConfirmText('');
+    setShowWipeConfirmModal(true);
+  };
 
-    const firstConfirm = window.confirm(
-      'تحذير أمني شديد الخطورة:\nهل أنت متأكد تماماً من رغبتك في مسح كافة بيانات البرنامج والبدء من الصفر؟\nسيتم حذف جميع المشروعات، الأبراج، الوحدات، المصروفات، المخازن، الأقساط، والموردين نهائياً!'
-    );
-    if (!firstConfirm) return;
+  const handleExecuteFullWipe = () => {
+    if (wipeConfirmText.trim() !== 'مسح' && wipeConfirmText.trim().toUpperCase() !== 'DELETE') {
+      error('يرجى كتابة كلمة "مسح" لتأكيد الحذف الشامل.');
+      return;
+    }
 
-    const code = window.prompt('لتأكيد المسح الشامل لكافة البيانات، يرجى كتابة كلمة "مسح" أو "DELETE":');
-    if (code === 'مسح' || code === 'DELETE' || code === 'delete') {
-      try {
-        const keysToRemove: string[] = [];
-        for (let i = 0; i < localStorage.length; i++) {
-          const k = localStorage.key(i);
-          if (k && (k.startsWith('egypt_contracting_') || k.startsWith('elnokhba_'))) {
-            keysToRemove.push(k);
-          }
-        }
-        keysToRemove.forEach((k) => localStorage.removeItem(k));
-        success('تم مسح بيانات البرنامج بنجاح والعودة لحالة النظام النظيفة.');
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
-      } catch (err) {
-        console.error(err);
-        error('حدث خطأ أثناء مسح البيانات.');
-      }
-    } else {
-      error('تم إلغاء عملية المسح لعدم تطابق كلمة التأكيد.');
+    setIsWiping(true);
+    try {
+      wipeAllApplicationData();
+      setShowWipeConfirmModal(false);
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (err: any) {
+      console.error(err);
+      setIsWiping(false);
+      error('حدث خطأ أثناء مسح البيانات.');
     }
   };
 
@@ -456,18 +453,77 @@ export const SettingsView: React.FC = () => {
                 <span>منطقة الخطر - خاصة بمدير النظام الرئيسي (Admin)</span>
               </div>
               <p className="text-xs text-rose-700 leading-relaxed">
-                مسح شامل لكافة بيانات البرنامج والبدء من الصفر بقاعدة بيانات فارغة تماماً. هذا الإجراء نهائي ولا يمكن التراجع عنه إلا برفع نسخة احتياطية سابقة.
+                مسح شامل لكافة بيانات البرنامج والبدء من الصفر بقاعدة بيانات فارغة تماماً (حذف المشروعات، الأبراج، الوحدات، المخازن، الأقساط، والموردين). هذا الإجراء نهائي ولا يمكن التراجع عنه.
               </p>
               <div className="pt-2">
                 <button
                   type="button"
                   id="wipe-all-data-btn"
-                  onClick={handleWipeAllData}
-                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white text-xs font-bold shadow-md shadow-rose-600/20 transition-all"
+                  onClick={handleOpenWipeModal}
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white text-xs font-bold shadow-md shadow-rose-600/20 transition-all cursor-pointer"
                 >
                   <Trash2 className="w-4 h-4" />
                   <span>مسح بيانات البرنامج بالكامل والبدء من جديد</span>
                 </button>
+              </div>
+            </div>
+          )}
+
+          {/* Modal for Confirmation */}
+          {showWipeConfirmModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm" dir="rtl">
+              <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-rose-200 space-y-4 animate-in fade-in zoom-in-95">
+                <div className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
+                  <ShieldAlert className="w-6 h-6" />
+                </div>
+
+                <div className="text-center space-y-1.5">
+                  <h3 className="text-lg font-black text-slate-900">
+                    تأكيد مسح كافة بيانات البرنامج
+                  </h3>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    سيتم تفريغ كافة الجداول فوراً:
+                    المشروعات، الأبراج، الوحدات، المصروفات، المخازن، الأقساط، الشركاء، والموردين بالكامل.
+                  </p>
+                </div>
+
+                <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-xs text-rose-900 font-semibold space-y-2">
+                  <p>لتأكيد العملية، يرجى كتابة كلمة <strong className="text-rose-700 font-black">"مسح"</strong> في المربع التالي:</p>
+                  <input
+                    type="text"
+                    autoFocus
+                    value={wipeConfirmText}
+                    onChange={(e) => setWipeConfirmText(e.target.value)}
+                    placeholder='اكتب كلمة "مسح"'
+                    className="w-full px-3 py-2 bg-white border border-rose-300 rounded-lg text-sm text-center font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-rose-500"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowWipeConfirmModal(false)}
+                    disabled={isWiping}
+                    className="w-full py-2.5 rounded-xl border border-slate-200 text-slate-700 font-semibold text-xs hover:bg-slate-50 transition-colors"
+                  >
+                    تراجع وإلغاء
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleExecuteFullWipe}
+                    disabled={isWiping || (wipeConfirmText.trim() !== 'مسح' && wipeConfirmText.trim().toUpperCase() !== 'DELETE')}
+                    className="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    {isWiping ? (
+                      <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
+                    ) : (
+                      <>
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>مسح شامل للبيانات</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           )}

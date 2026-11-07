@@ -1585,50 +1585,52 @@ export const INITIAL_PARTNER_DISTRIBUTIONS: PartnerDistribution[] = [
 
 // Ensure local persistence initialization
 export const initializeFinancialStorage = () => {
+  const isWipedClean = localStorage.getItem('app_data_wiped_clean') === 'true';
+
   if (!localStorage.getItem(`${STORAGE_PREFIX}bank_accounts`)) {
-    setLocal('bank_accounts', INITIAL_BANK_ACCOUNTS);
+    setLocal('bank_accounts', isWipedClean ? [] : INITIAL_BANK_ACCOUNTS);
   }
   if (!localStorage.getItem(`${STORAGE_PREFIX}warehouses`)) {
-    setLocal('warehouses', INITIAL_WAREHOUSES);
+    setLocal('warehouses', isWipedClean ? [] : INITIAL_WAREHOUSES);
   }
   if (!localStorage.getItem(`${STORAGE_PREFIX}material_items`)) {
-    setLocal('material_items', INITIAL_MATERIAL_ITEMS);
+    setLocal('material_items', isWipedClean ? [] : INITIAL_MATERIAL_ITEMS);
   }
   if (!localStorage.getItem(`${STORAGE_PREFIX}inventory_transactions`)) {
-    setLocal('inventory_transactions', INITIAL_INVENTORY_TXS);
+    setLocal('inventory_transactions', isWipedClean ? [] : INITIAL_INVENTORY_TXS);
   }
   if (!localStorage.getItem(`${STORAGE_PREFIX}expenses`)) {
-    setLocal('expenses', INITIAL_EXPENSES);
+    setLocal('expenses', isWipedClean ? [] : INITIAL_EXPENSES);
   }
   if (!localStorage.getItem(`${STORAGE_PREFIX}tower_units`)) {
-    setLocal('tower_units', INITIAL_UNITS);
+    setLocal('tower_units', isWipedClean ? [] : INITIAL_UNITS);
   }
   if (!localStorage.getItem(`${STORAGE_PREFIX}contract_installments`)) {
-    setLocal('contract_installments', INITIAL_CONTRACT_INSTALLMENTS);
+    setLocal('contract_installments', isWipedClean ? [] : INITIAL_CONTRACT_INSTALLMENTS);
   }
   if (!localStorage.getItem(`${STORAGE_PREFIX}payment_receipts`)) {
-    setLocal('payment_receipts', INITIAL_PAYMENT_RECEIPTS);
+    setLocal('payment_receipts', isWipedClean ? [] : INITIAL_PAYMENT_RECEIPTS);
   }
   if (!localStorage.getItem(`${STORAGE_PREFIX}bank_transactions`)) {
-    setLocal('bank_transactions', INITIAL_BANK_TRANSACTIONS);
+    setLocal('bank_transactions', isWipedClean ? [] : INITIAL_BANK_TRANSACTIONS);
   }
   if (!localStorage.getItem(`${STORAGE_PREFIX}suppliers`)) {
-    setLocal('suppliers', INITIAL_SUPPLIERS);
+    setLocal('suppliers', isWipedClean ? [] : INITIAL_SUPPLIERS);
   }
   if (!localStorage.getItem(`${STORAGE_PREFIX}supplier_invoices`)) {
-    setLocal('supplier_invoices', INITIAL_SUPPLIER_INVOICES);
+    setLocal('supplier_invoices', isWipedClean ? [] : INITIAL_SUPPLIER_INVOICES);
   }
   if (!localStorage.getItem(`${STORAGE_PREFIX}supplier_payments`)) {
-    setLocal('supplier_payments', INITIAL_SUPPLIER_PAYMENTS);
+    setLocal('supplier_payments', isWipedClean ? [] : INITIAL_SUPPLIER_PAYMENTS);
   }
   if (!localStorage.getItem(`${STORAGE_PREFIX}partners`)) {
-    setLocal('partners', INITIAL_PARTNERS);
+    setLocal('partners', isWipedClean ? [] : INITIAL_PARTNERS);
   }
   if (!localStorage.getItem(`${STORAGE_PREFIX}partner_shares`)) {
-    setLocal('partner_shares', INITIAL_PARTNER_SHARES);
+    setLocal('partner_shares', isWipedClean ? [] : INITIAL_PARTNER_SHARES);
   }
   if (!localStorage.getItem(`${STORAGE_PREFIX}partner_distributions`)) {
-    setLocal('partner_distributions', INITIAL_PARTNER_DISTRIBUTIONS);
+    setLocal('partner_distributions', isWipedClean ? [] : INITIAL_PARTNER_DISTRIBUTIONS);
   }
 };
 

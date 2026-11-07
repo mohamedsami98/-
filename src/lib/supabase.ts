@@ -621,6 +621,8 @@ const setStorageItem = <T>(key: string, val: T): void => {
 
 // Initialize repositories if empty
 export const initializeLocalStorage = () => {
+  const isWipedClean = localStorage.getItem('app_data_wiped_clean') === 'true';
+
   if (!localStorage.getItem(`${LOCAL_STORAGE_KEY_PREFIX}roles`)) {
     setStorageItem('roles', DEFAULT_ROLES);
   }
@@ -634,13 +636,13 @@ export const initializeLocalStorage = () => {
     setStorageItem('users', DEFAULT_USERS);
   }
   if (!localStorage.getItem(`${LOCAL_STORAGE_KEY_PREFIX}projects`)) {
-    setStorageItem('projects', INITIAL_PROJECTS);
+    setStorageItem('projects', isWipedClean ? [] : INITIAL_PROJECTS);
   }
   if (!localStorage.getItem(`${LOCAL_STORAGE_KEY_PREFIX}towers`)) {
-    setStorageItem('towers', INITIAL_TOWERS);
+    setStorageItem('towers', isWipedClean ? [] : INITIAL_TOWERS);
   }
   if (!localStorage.getItem(`${LOCAL_STORAGE_KEY_PREFIX}activity_logs`)) {
-    setStorageItem('activity_logs', INITIAL_ACTIVITY_LOGS);
+    setStorageItem('activity_logs', isWipedClean ? [] : INITIAL_ACTIVITY_LOGS);
   }
   if (!localStorage.getItem(`${LOCAL_STORAGE_KEY_PREFIX}company_settings`)) {
     setStorageItem('company_settings', DEFAULT_COMPANY_SETTINGS);
