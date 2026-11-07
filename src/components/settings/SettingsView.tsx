@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   Building2, 
   Database, 
@@ -13,7 +13,11 @@ import {
   Code2, 
   RefreshCw,
   ExternalLink,
-  ShieldAlert
+  ShieldAlert,
+  Download,
+  Upload,
+  Trash2,
+  Lock
 } from 'lucide-react';
 import { useSettings } from '../../context/SettingsContext';
 import { useAuth } from '../../context/AuthContext';
@@ -25,6 +29,7 @@ export const SettingsView: React.FC = () => {
   const { settings, updateSettings, resetToDemoData } = useSettings();
   const { user } = useAuth();
   const { success, error } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [companyName, setCompanyName] = useState(settings.company_name);
   const [systemName, setSystemName] = useState(settings.system_name);
@@ -42,6 +47,12 @@ export const SettingsView: React.FC = () => {
   const [isResetting, setIsResetting] = useState(false);
 
   const isConnected = isSupabaseConfigured();
+
+  // Check if current user is primary system admin
+  const isPrimaryAdmin = user?.role_key === 'system_admin' || 
+                         user?.email?.toLowerCase().startsWith('admin') ||
+                         user?.id === 'user-admin-1' ||
+                         user?.id === 'admin';
 
   const handleSaveCompanySettings = (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,6 +89,120 @@ export const SettingsView: React.FC = () => {
         success('تمت استعادة البيانات النموذجية بنجاح.');
         window.location.reload();
       }, 500);
+    }
+  };
+
+  // Full backup download
+  const handleDownloadBackup = () => {
+    try {
+      const backupData: Record<string, string> = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('egypt_contracting_') || key.startsWith('elnokhba_'))) {
+          backupData[key] = localStorage.getItem(key) || '';
+        }
+      }
+
+      const jsonStr = JSON.stringify({
+        appName: 'ElNokhba_Contracting_ERP',
+        version: '2.0.0',
+        exportedAt: new Date().toISOString(),
+        exportedBy: user?.full_name || 'Admin',
+        data: backupData,
+      }, null, 2);
+
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const dateStr = new Date().toISOString().split('T')[0];
+      a.href = url;
+      a.download = `backup_contracting_erp_${dateStr}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      success('تم تصدير وتنزيل النسخة الاحتياطية الكاملة بنجاح.');
+    } catch (err) {
+      console.error(err);
+      error('حدث خطأ أثناء تنزيل النسخة الاحتياطية.');
+    }
+  };
+
+  // Full backup upload / restore
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const content = event.target?.result as string;
+        const parsed = JSON.parse(content);
+        const data = parsed.data || parsed;
+
+        if (typeof data !== 'object') {
+          throw new Error('ملف النسخة الاحتياطية غير صالح.');
+        }
+
+        let keysRestored = 0;
+        Object.entries(data).forEach(([key, value]) => {
+          if (typeof value === 'string') {
+            localStorage.setItem(key, value);
+            keysRestored++;
+          }
+        });
+
+        if (keysRestored === 0) {
+          throw new Error('لم يتم العثور على سجلات صالحة في الملف.');
+        }
+
+        success(`تمت استعادة ${keysRestored} جدول وسجل بنجاح! جاري إعادة التحميل...`);
+        setTimeout(() => {
+          window.location.reload();
+        }, 1200);
+      } catch (err: any) {
+        console.error(err);
+        error(err.message || 'فشلت استعادة النسخة الاحتياطية. يرجى التأكد من صحة الملف.');
+      }
+    };
+    reader.readAsText(file);
+    // Reset input
+    e.target.value = '';
+  };
+
+  // Primary Admin Wipe all data
+  const handleWipeAllData = () => {
+    if (!isPrimaryAdmin) {
+      error('عذراً، هذه العملية مقصورة فقط على الأدمن الرئيسي للنظام.');
+      return;
+    }
+
+    const firstConfirm = window.confirm(
+      'تحذير أمني شديد الخطورة:\nهل أنت متأكد تماماً من رغبتك في مسح كافة بيانات البرنامج والبدء من الصفر؟\nسيتم حذف جميع المشروعات، الأبراج، الوحدات، المصروفات، المخازن، الأقساط، والموردين نهائياً!'
+    );
+    if (!firstConfirm) return;
+
+    const code = window.prompt('لتأكيد المسح الشامل لكافة البيانات، يرجى كتابة كلمة "مسح" أو "DELETE":');
+    if (code === 'مسح' || code === 'DELETE' || code === 'delete') {
+      try {
+        const keysToRemove: string[] = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && (k.startsWith('egypt_contracting_') || k.startsWith('elnokhba_'))) {
+            keysToRemove.push(k);
+          }
+        }
+        keysToRemove.forEach((k) => localStorage.removeItem(k));
+        success('تم مسح بيانات البرنامج بنجاح والعودة لحالة النظام النظيفة.');
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      } catch (err) {
+        console.error(err);
+        error('حدث خطأ أثناء مسح البيانات.');
+      }
+    } else {
+      error('تم إلغاء عملية المسح لعدم تطابق كلمة التأكيد.');
     }
   };
 
@@ -278,8 +403,76 @@ export const SettingsView: React.FC = () => {
           </div>
         </form>
 
-        {/* SQL Schema helper card (5 cols) */}
+        {/* SQL Schema helper card & Backup / Danger Zone (5 cols) */}
         <div className="lg:col-span-5 space-y-6">
+          {/* Backup & Restore Card */}
+          <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-4">
+            <h3 className="text-base font-bold text-slate-900 pb-3 border-b border-slate-100 flex items-center gap-2">
+              <Database className="w-5 h-5 text-indigo-600" />
+              <span>النسخ الاحتياطي واستعادة البيانات</span>
+            </h3>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              يمكنك تصدير نسخة احتياطية كاملة من بيانات النظام (المشروعات، الأبراج، الوحدات، المخازن، الأقساط، والموردين) بصيغة JSON وحفظها بأمان، أو استعادتها في أي وقت.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              {/* Download Backup */}
+              <button
+                type="button"
+                id="download-backup-btn"
+                onClick={handleDownloadBackup}
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-sm"
+              >
+                <Download className="w-4 h-4 text-emerald-400" />
+                <span>تنزيل نسخة احتياطية</span>
+              </button>
+
+              {/* Upload Backup */}
+              <button
+                type="button"
+                id="upload-backup-btn"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-800 text-xs font-bold transition-all"
+              >
+                <Upload className="w-4 h-4 text-blue-600" />
+                <span>رفع نسخة احتياطية</span>
+              </button>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+            </div>
+          </div>
+
+          {/* Primary Admin Only Danger Zone: Wipe All Data */}
+          {isPrimaryAdmin && (
+            <div className="bg-rose-50/70 border border-rose-200 rounded-3xl p-6 shadow-sm space-y-3">
+              <div className="flex items-center gap-2 text-rose-800 font-bold text-sm">
+                <ShieldAlert className="w-5 h-5 text-rose-600" />
+                <span>منطقة الخطر - خاصة بمدير النظام الرئيسي (Admin)</span>
+              </div>
+              <p className="text-xs text-rose-700 leading-relaxed">
+                مسح شامل لكافة بيانات البرنامج والبدء من الصفر بقاعدة بيانات فارغة تماماً. هذا الإجراء نهائي ولا يمكن التراجع عنه إلا برفع نسخة احتياطية سابقة.
+              </p>
+              <div className="pt-2">
+                <button
+                  type="button"
+                  id="wipe-all-data-btn"
+                  onClick={handleWipeAllData}
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white text-xs font-bold shadow-md shadow-rose-600/20 transition-all"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>مسح بيانات البرنامج بالكامل والبدء من جديد</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* SQL Schema for Supabase Card */}
           <div className="bg-slate-900 text-slate-100 rounded-3xl p-6 sm:p-7 shadow-lg border border-slate-800">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">

@@ -141,16 +141,29 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       // Local / Offline authentication fallback
       const users = await dataService.getUsers();
-      const matched = users.find((u) => u.email.toLowerCase() === email.trim().toLowerCase());
+      const trimmedInput = email.trim().toLowerCase();
+
+      // Check for user by email OR if input is 'admin' / matching username
+      const matched = users.find((u) => {
+        const uEmail = (u.email || '').toLowerCase();
+        return uEmail === trimmedInput || (trimmedInput === 'admin' && (u.role_key === 'system_admin' || uEmail.startsWith('admin')));
+      });
 
       if (!matched) {
-        error('البريد الإلكتروني غير مسجل في النظام.');
+        error('اسم المستخدم أو البريد الإلكتروني غير مسجل في النظام.');
         setLoading(false);
         return false;
       }
 
       if (matched.status === 'inactive') {
         error('هذا الحساب معطل حالياً. يرجى مراجعة مدير النظام.');
+        setLoading(false);
+        return false;
+      }
+
+      // Check password: '112233' is master password, or 'admin123', or 'password123'
+      if (pass !== '112233' && pass !== 'admin123' && pass !== 'password123') {
+        error('كلمة المرور غير صحيحة.');
         setLoading(false);
         return false;
       }

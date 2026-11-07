@@ -167,7 +167,8 @@ export const PartnerShareModal: React.FC<PartnerShareModalProps> = ({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                <label className="block text-xs font-bold text-slate-200 mb-1.5 flex items-center gap-1.5">
+                  <Building2 className="w-3.5 h-3.5 text-blue-400" />
                   المبلغ الإجمالي للمشروع (ج.م) <span className="text-rose-400">*</span>
                 </label>
                 <input
@@ -181,12 +182,13 @@ export const PartnerShareModal: React.FC<PartnerShareModalProps> = ({
                   className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                   dir="ltr"
                 />
-                <span className="text-[10px] text-slate-500 mt-1 block">رأس مال أو ميزانية المشروع المستهدفة</span>
+                <span className="text-[10px] text-slate-400 mt-1 block">رأس مال أو ميزانية المشروع التقديرية</span>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  المبلغ المدخل من الشريك (ج.م) <span className="text-rose-400">*</span>
+                <label className="block text-xs font-black text-amber-400 mb-1.5 flex items-center gap-1.5">
+                  <DollarSign className="w-4 h-4 text-emerald-400" />
+                  مبلغ المساهمة للشريك (ج.م) <span className="text-rose-400">*</span>
                 </label>
                 <input
                   type="number"
@@ -195,11 +197,13 @@ export const PartnerShareModal: React.FC<PartnerShareModalProps> = ({
                   required
                   value={formData.investment_amount}
                   onChange={(e) => setFormData({ ...formData, investment_amount: e.target.value })}
-                  placeholder="مبلغ مساهمة الشريك"
-                  className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-sm font-bold text-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                  placeholder="مبلغ مساهمة الشريك في المشروع"
+                  className="w-full bg-slate-900 border-2 border-purple-500/60 rounded-xl px-3.5 py-2.5 text-base font-extrabold text-amber-300 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 shadow-inner"
                   dir="ltr"
                 />
-                <span className="text-[10px] text-slate-500 mt-1 block">قيمة الحصة الرأسمالية المدفوعة</span>
+                <span className="text-[11px] text-purple-300 font-semibold mt-1 block">
+                  ★ خانة تحديد مبلغ المساهمة التي تُحسب على أساسها نسبة التكلفة والأرباح
+                </span>
               </div>
             </div>
 

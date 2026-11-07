@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, Receipt, Building2, Building, DollarSign, Calendar, FileText, UserCheck, CreditCard } from 'lucide-react';
-import { Project, Tower, CostCategory, BankAccount } from '../../types';
+import { X, Receipt, Building2, Building, DollarSign, Calendar, FileText, UserCheck, CreditCard, Users2 } from 'lucide-react';
+import { Project, Tower, CostCategory, BankAccount, Supplier } from '../../types';
 import { dataService } from '../../lib/supabase';
 import { financialService } from '../../lib/financialService';
 
@@ -32,6 +32,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
   const [projects, setProjects] = useState<Project[]>([]);
   const [towers, setTowers] = useState<Tower[]>([]);
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [filteredTowers, setFilteredTowers] = useState<Tower[]>([]);
 
   const [projectId, setProjectId] = useState<string>('');
@@ -40,6 +41,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
   const [amount, setAmount] = useState<string>('');
   const [expenseDate, setExpenseDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [invoiceNumber, setInvoiceNumber] = useState<string>('');
+  const [selectedSupplierId, setSelectedSupplierId] = useState<string>('');
   const [supplierBeneficiary, setSupplierBeneficiary] = useState<string>('');
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'bank_transfer' | 'cheque'>('bank_transfer');
   const [bankAccountId, setBankAccountId] = useState<string>('');
@@ -52,14 +54,16 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
     if (!isOpen) return;
     const loadDependencies = async () => {
       try {
-        const [projs, tows, accounts] = await Promise.all([
+        const [projs, tows, accounts, sups] = await Promise.all([
           dataService.getProjects(),
           dataService.getTowers(),
           financialService.getBankAccounts(),
+          financialService.getSuppliers(),
         ]);
         setProjects(projs);
         setTowers(tows);
         setBankAccounts(accounts);
+        setSuppliers(sups);
 
         const initProjId = defaultProjectId || (projs.length > 0 ? projs[0].id : '');
         setProjectId(initProjId);
@@ -250,16 +254,49 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
           {/* Supplier & Invoice */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1.5">
-                <UserCheck className="w-3.5 h-3.5 text-indigo-600" />
-                المورد / المستفيد / مقاول الباطن *
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                  <UserCheck className="w-3.5 h-3.5 text-indigo-600" />
+                  المورد / المستفيد / مقاول الباطن *
+                </label>
+                {suppliers.length > 0 && (
+                  <span className="text-[10px] text-blue-600">اختر من القائمة أو اكتب اسماً</span>
+                )}
+              </div>
+
+              {suppliers.length > 0 && (
+                <div className="mb-2">
+                  <select
+                    value={selectedSupplierId}
+                    onChange={(e) => {
+                      const supId = e.target.value;
+                      setSelectedSupplierId(supId);
+                      const sup = suppliers.find((s) => s.id === supId);
+                      if (sup) {
+                        setSupplierBeneficiary(sup.name);
+                      }
+                    }}
+                    className="w-full px-3 py-2 bg-indigo-50/50 border border-indigo-200 text-indigo-950 rounded-xl text-xs font-semibold focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none mb-1.5"
+                  >
+                    <option value="">-- اختيار سريع من دليل الموردين المسجلين --</option>
+                    {suppliers.map((sup) => (
+                      <option key={sup.id} value={sup.id}>
+                        {sup.name} ({sup.category_ar || sup.category}) - رصيد: {sup.current_balance.toLocaleString()} ج.م
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <input
                 type="text"
                 value={supplierBeneficiary}
-                onChange={(e) => setSupplierBeneficiary(e.target.value)}
+                onChange={(e) => {
+                  setSupplierBeneficiary(e.target.value);
+                  setSelectedSupplierId('');
+                }}
                 required
-                placeholder="مثال: شركة مصر للخرسانة الجاهزة"
+                placeholder="اسم المورد أو المستفيد الفعلي"
                 className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
             </div>
