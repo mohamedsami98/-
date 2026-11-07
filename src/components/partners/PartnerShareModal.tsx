@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, PieChart, Building2, DollarSign, Calculator, Percent, Landmark, CheckCircle2 } from 'lucide-react';
+import { X, PieChart, Building2, DollarSign, Calculator, Percent, Landmark, CheckCircle2, User } from 'lucide-react';
 import { Partner, Project, BankAccount } from '../../types';
 import { dataService } from '../../lib/supabase';
 import { financialService } from '../../lib/financialService';
@@ -91,6 +91,7 @@ export const PartnerShareModal: React.FC<PartnerShareModalProps> = ({
     try {
       await onSubmit({
         ...formData,
+        partner_id: formData.partner_id,
         partner_name: partner?.name || '',
         project_name: project?.name || '',
         investment_amount: investmentNum,
@@ -127,23 +128,29 @@ export const PartnerShareModal: React.FC<PartnerShareModalProps> = ({
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div className="space-y-4">
+            {/* Partner Selection from Coded Partners Directory */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                الشريك المستثمر <span className="text-rose-400">*</span>
+              <label className="block text-xs font-bold text-slate-200 mb-1.5 flex items-center gap-1.5">
+                <User className="w-4 h-4 text-purple-400" />
+                اسم الشريك (اختيار من قائمة تكويد الشركاء) <span className="text-rose-400">*</span>
               </label>
+
               <select
                 required
                 value={formData.partner_id}
                 onChange={(e) => setFormData({ ...formData, partner_id: e.target.value })}
-                className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                className="w-full bg-slate-900 border-2 border-purple-500/70 rounded-xl px-3.5 py-3 text-sm font-bold text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
               >
-                <option value="">-- اختر الشريك --</option>
+                <option value="">-- اختر اسم الشريك من دليل الشركاء المكودين ({partners.length} شريك) --</option>
                 {partners.map((p) => (
                   <option key={p.id} value={p.id}>
-                    {p.name} ({p.partner_type_ar || p.partner_type})
+                    {p.name} [{p.code}] - ({p.partner_type_ar || p.partner_type}) - مساهماته السابقة: {p.total_invested.toLocaleString()} ج.م
                   </option>
                 ))}
               </select>
+              <span className="text-[11px] text-purple-300/80 mt-1.5 block">
+                * يتم اختيار الشريك مباشرة من قائمة الشركاء المكودين في النظام لربط الحصة وتوزيع الأرباح به.
+              </span>
             </div>
 
             <div>

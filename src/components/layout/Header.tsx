@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 import { 
   Menu, 
-  Database, 
   Shield, 
   UserCheck, 
   FileSpreadsheet,
   Download
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { isSupabaseConfigured, DEFAULT_USERS } from '../../lib/supabase';
+import { DEFAULT_USERS } from '../../lib/supabase';
 import { generateContractingExcelWorkbook } from '../../lib/excelExportService';
 
 interface HeaderProps {
@@ -40,7 +39,6 @@ export const Header: React.FC<HeaderProps> = ({
   const { user, role, switchDemoUser } = useAuth();
   const [showRoleSwitcher, setShowRoleSwitcher] = useState(false);
   const [isExportingExcel, setIsExportingExcel] = useState(false);
-  const isConnectedToSupabase = isSupabaseConfigured();
 
   const handleExportExcel = async () => {
     try {
@@ -102,23 +100,6 @@ export const Header: React.FC<HeaderProps> = ({
           </span>
           <Download className="w-3.5 h-3.5 text-emerald-700" />
         </button>
-
-        {/* Database connection badge */}
-        <div 
-          onClick={() => onNavigate('settings')}
-          className={`cursor-pointer px-2.5 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-2 transition-all ${
-            isConnectedToSupabase
-              ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
-              : 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100'
-          }`}
-          title={isConnectedToSupabase ? 'قاعدة بيانات Supabase متصلة ومباشرة' : 'وضع قاعدة البيانات المحلية التفاعلية (جاهز للربط بـ Supabase)'}
-        >
-          <Database className="w-3.5 h-3.5" />
-          <span className="hidden md:inline">
-            {isConnectedToSupabase ? 'Supabase متصل' : 'قاعدة بيانات محلية (جاهز لـ Supabase)'}
-          </span>
-          <span className="w-2 h-2 rounded-full bg-current animate-pulse" />
-        </div>
 
         {/* Quick Role Tester dropdown for instant testing of all 8 roles */}
         <div className="relative">
